@@ -1,4 +1,12 @@
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// Reciever EMG car code
+// NJIT - BME 383 
+// 
+// This Demo code is setup to work with the Seed Studio ESP32-S3
+//
+// Code by Erick Nunez
+//
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // COMMUNICATION LIBRARIES AND DEFINITIONS (Do not modify unless you have to!)
 #include <WiFi.h>
 #include <esp_now.h>
@@ -34,9 +42,9 @@ void onDataReceived(const esp_now_recv_info_t *info, const uint8_t *data, int le
     memcpy((void *)&latestPacket, data, sizeof(ControlPacket));
     newDataAvailable = true;
     lastReceiveTime  = millis();
-    digitalWrite(LED_BUILTIN,HIGH);
+    digitalWrite(LED_BUILTIN,HIGH);   // NOTE: ESP32-C3 has NO built-in LED
     delay(100);
-    digitalWrite(LED_BUILTIN,LOW);
+    digitalWrite(LED_BUILTIN,LOW);    // NOTE: ESP32-C3 has NO built-in LED
     delay(100);
   }
 }
@@ -49,7 +57,7 @@ int leftMotorPin1 = A0;
 int leftMotorPin2 = A1;
 
 int rightMotorPin1 = A2;
-int rightMotorPin2 = A3;
+int rightMotorPin2 = A3;        // NOTE: ESP32-C3 and ESP32-C6 boards does not have an A3 pin
 
 int leftMotorSpeed = 0;
 int rightMotorSpeed = 0;
@@ -66,8 +74,8 @@ void setup() {
   // COMMUNICATION SETUP() (Do not modify unless you have to!)
   Serial.begin(115200);
   Serial.println("=== RECEIVER starting ===");
-  pinMode(LED_BUILTIN,OUTPUT);
-  digitalWrite(LED_BUILTIN,LOW);
+  pinMode(LED_BUILTIN,OUTPUT);    // NOTE: ESP32-C3 has NO built-in LED
+  digitalWrite(LED_BUILTIN,LOW);   // NOTE: ESP32-C3 has NO built-in LED
 
   // --- Starts Wifi and print this board's MAC address --
   WiFi.mode(WIFI_MODE_STA);

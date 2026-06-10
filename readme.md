@@ -35,7 +35,7 @@ Biopac MP36  →  LM324 Signal Conditioning  →  Transmitter ESP32
 
 | Qty | Item |
 |-----|------|
-| 2 | Seeed Studio XIAO ESP32-S3 (or ESP32-C3 as backup — see Section 3) |
+| 2 | Seeed Studio XIAO ESP32-S3 or ESP32-C3 or ESP32-C6|
 | 1 | Biopac MP36 with BSL PRO software |
 | 1 | EMG electrode leads (SS2LB or similar) |
 | 1 | Hand dynamometer or any other Biopac-compatible sensor |
@@ -186,15 +186,18 @@ Strong contraction → op-amp output ≈ 3.0 V → ADC reads ~3700 (Max: 4095).
 | Board | Arduino IDE Selection | Notes |
 |-------|-----------------------|-------|
 | XIAO ESP32-S3 | `XIAO_ESP32S3` | Primary board for this lab |
-| XIAO ESP32-C3 | `XIAO_ESP32C3` | Backup — same code, same pin names, no changes needed |
+| XIAO ESP32-C3 | `XIAO_ESP32C3` | NO built in LED, no A3 pin |
+| XIAO ESP32-C6 | `XIAO_ESP32C6` | no A3 pin |
 
-Both boards support ESP-NOW and all features used in this lab. If you receive an ESP32-C3, simply select `XIAO_ESP32C3` in the board menu. The pin names A0, A1, A2, A3 map correctly on both boards.
+All boards support ESP-NOW and all features used in this lab. If you receive an ESP32-C3 or ESP32-C6, simply select `XIAO_ESP32C3` or `XIAO_ESP32C6` in the board menu. The pin names A0, A1, A2 map correctly on both boards. If you are using A3, note that these other boards do not have one.
 
-> **ESP32-C3 note:** On the C3, some ADC channels are disabled when WiFi is active. This does not affect this project — the Espressif board package routes A0 and A1 to ADC1 channels that remain available during ESP-NOW operation.
+> **ESP32-C3 note:** On the C3, A3 channel is disabled when WiFi is active. This does affect this project — the Espressif board package routes A0 and A1 to ADC1 channels that remain available during ESP-NOW operation.
 
 ### 3.3 Reference Links
 
 - XIAO ESP32-S3 Wiki: https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/
+- XIAO ESP32-C3 Wiki: https://wiki.seeedstudio.com/xiao_esp32c3_getting_started/
+- XIAO ESP32-C6 Wiki: https://wiki.seeedstudio.com/xiao_esp32c6_getting_started/
 - DRV8833 Motor Driver Tutorial: https://lastminuteengineers.com/drv8833-arduino-tutorial/
 - Biopac MP36 Manual: https://www.biopac.com/wp-content/uploads/MP36-MP45.pdf
 
@@ -377,7 +380,7 @@ The base system is a working platform. Here are directions to take it further.
 The conditioning circuit and code are sensor-agnostic — they process whatever voltage arrives at the ADC pin. You can use any MP36-compatible sensor for either channel:
 - Replace the hand dynamometer with a **second EMG channel** for more nuanced steering control
 - Use an oscilloscope to measure the signal and fine tune your circuit before pulling into ESP32
-- The LM324 has **two unused op-amp sections** (pins 8–14) — use them to condition a third or fourth channel if you want more inputs
+- The LM324 has **two unused op-amp sections** (pins 8–14) — use them to condition a third or fourth channel if you want more inputs (NOTE each additional channel would need a PC and Biopac Box).
 
 ### Change the Control Logic
 

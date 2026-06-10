@@ -1,4 +1,12 @@
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// Transmitter EMG car code
+// NJIT - BME 383 
+// 
+// This Demo code is setup to work with the Seed Studio ESP32-C6
+//
+// Code by Erick Nunez
+//
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // COMMUNICATION LIBRARIES AND DEFINITIONS (Do not modify unless you have to!)
 #include <WiFi.h>
 #include <esp_now.h>
