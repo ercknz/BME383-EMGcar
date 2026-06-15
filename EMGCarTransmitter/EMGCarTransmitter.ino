@@ -44,6 +44,10 @@ int sensorVal1;
 int sensorVal2;
 int biopac1Pin = A0;
 int biopac2Pin = A1;
+
+int lastEMG = 0;
+float alpha = 0.5f;
+int emgValue = 0;
 // =============================================================================
 
 void setup() {
@@ -98,9 +102,13 @@ void loop() {
   sensorVal1 = analogRead(biopac1Pin);
   sensorVal2 = analogRead(biopac2Pin);
 
+  // Exponential Filter
+  emgValue = round(sensorVal1 * alpha + lastEMG * (1.0 - alpha));
+  lastEMG = emgValue;
+
   // Print data
   Serial.print("Sensor1:"); 
-  Serial.print(sensorVal1);
+  Serial.print(emgValue);
   Serial.print(", Sensor2: "); 
   Serial.print(sensorVal2);
 
@@ -109,11 +117,11 @@ void loop() {
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // PACKET COMMUNICATION (Do not modify unless you have to!)
   // --- Clamp to valid range ---
-  packet.SensorVal1 = constrain(sensorVal1, 0, 4095);
+  packet.SensorVal1 = constrain(emgValue, 0, 4095);
   packet.SensorVal2 = constrain(sensorVal2, 0, 4095);
 
   // --- Send packet to receiver ---
   esp_now_send(receiverMAC, (uint8_t *)&packet, sizeof(packet));
-  delay(250);
+  delay(250);       // Adjust delay as needed. NOTE: Too fast may cause packet loss, too slow may cause lag.
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 }

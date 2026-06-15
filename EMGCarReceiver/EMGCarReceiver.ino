@@ -63,10 +63,10 @@ int leftMotorSpeed = 0;
 int rightMotorSpeed = 0;
 int steering = 0;
 
-int EMGcap = 2000;
-int lastSpeed = 0;
-float alpha = 0.75f;
+int minSideValue = 2047;      // half of the DAC range (0-4095)
+int maxMaxValue = 6142;       // max DAC value (2047 + 4095)
 int speedValue = 0;
+int maxSteeringValue = 100;   // Lowered from a max of 4095. Adjust as needed.
 // =============================================================================
 
 void setup() {
@@ -130,18 +130,16 @@ void loop() {
   // STUDENT'S MAIN LOOP() CODE STARTS HERE:
   sensorValue1 = latestPacket.SensorVal1;
   sensorValue2 = latestPacket.SensorVal2;
-
-  // Exponential Filter
-  speedValue = round(sensorValue1 * alpha + lastSpeed * (1.0 - alpha));
-  lastSpeed = speedValue;
   
   // Control motor
-  steering = map(sensorValue2,0,4095,-2047,2047);
-  leftMotorSpeed = speedValue - steering - EMGcap;
-  rightMotorSpeed = speedValue + steering - EMGcap;
-  leftMotorSpeed = map(leftMotorSpeed, 2047 - EMGcap, 6142 - EMGcap, 0, 255);
+  steering = map(sensorValue2, 0, maxSteeringValue, -minSideValue, minSideValue);
+  steering = constrain(steering, -minSideValue, minSideValue);
+  Serial.print(steering);
+  leftMotorSpeed = sensorValue1 - steering;// - EMGcap;
+  rightMotorSpeed = sensorValue1 + steering;// - EMGcap;
+  leftMotorSpeed = map(leftMotorSpeed, minSideValue, maxMaxValue, 0, 255);
   leftMotorSpeed = constrain(leftMotorSpeed, 0, 255);
-  rightMotorSpeed = map(rightMotorSpeed, 2047 - EMGcap, 6142 - EMGcap, 0, 255);
+  rightMotorSpeed = map(rightMotorSpeed, minSideValue, maxMaxValue, 0, 255);
   rightMotorSpeed = constrain(rightMotorSpeed, 0, 255);
 
   // Write to Motors

@@ -186,7 +186,7 @@ Strong contraction → op-amp output ≈ 3.0 V → ADC reads ~3700 (Max: 4095).
 | Board | Arduino IDE Selection | Notes |
 |-------|-----------------------|-------|
 | XIAO ESP32-S3 | `XIAO_ESP32S3` | Primary board for this lab |
-| XIAO ESP32-C3 | `XIAO_ESP32C3` | NO built in LED, no A3 pin |
+| XIAO ESP32-C3 | `XIAO_ESP32C3` | NO built-in LED, no A3 pin |
 | XIAO ESP32-C6 | `XIAO_ESP32C6` | no A3 pin |
 
 All boards support ESP-NOW and all features used in this lab. If you receive an ESP32-C3 or ESP32-C6, simply select `XIAO_ESP32C3` or `XIAO_ESP32C6` in the board menu. The pin names A0, A1, A2 map correctly on both boards. If you are using A3, note that these other boards do not have one.
@@ -267,12 +267,15 @@ Upload the updated transmitter sketch. Both boards are now paired.
 
 ### 5.3 How the Transmitter Works
 
-The transmitter reads both ADC pins and sends a packet every 250 ms:
+The transmitter reads both ADC pins, filters the EMG signal, and sends a packet every 250 ms:
 
 ```cpp
 void loop() {
   sensorVal1 = analogRead(biopac1Pin);  // Speed channel    -> A0
   sensorVal2 = analogRead(biopac2Pin);  // Steering channel -> A1
+
+  emgValue = round(sensorVal1 * alpha + lastEMG * (1.0 - alpha));
+  lastEMG = emgValue;
 
   packet.SensorVal1 = constrain(sensorVal1, 0, 4095);
   packet.SensorVal2 = constrain(sensorVal2, 0, 4095);
@@ -293,22 +296,18 @@ The receiver decodes each packet and converts sensor values into left and right 
 sensorValue1 = latestPacket.SensorVal1;  // speed
 sensorValue2 = latestPacket.SensorVal2;  // steering
 
-// 2. Exponential smoothing filter
-speedValue = round(sensorValue1 * alpha + lastSpeed * (1.0 - alpha));
-lastSpeed = speedValue;
-
-// 3. Map steering: center (2048) = straight, above = left, below = right
+// 2. Map steering: center (2048) = straight, above = left, below = right
 steering = map(sensorValue2, 0, 4095, -2047, 2047);
 
-// 4. Tank drive mixing
-leftMotorSpeed  = speedValue - steering - EMGcap;
-rightMotorSpeed = speedValue + steering - EMGcap;
+// 3. Tank drive mixing
+leftMotorSpeed  = speedValue - steering;
+rightMotorSpeed = speedValue + steering;
 
-// 5. Scale to 0-255 PWM and clamp
-leftMotorSpeed  = constrain(map(leftMotorSpeed,  2047-EMGcap, 6142-EMGcap, 0, 255), 0, 255);
-rightMotorSpeed = constrain(map(rightMotorSpeed, 2047-EMGcap, 6142-EMGcap, 0, 255), 0, 255);
+// 4. Scale to 0-255 PWM and clamp
+leftMotorSpeed  = constrain(map(leftMotorSpeed,  2047, 6142, 0, 255), 0, 255);
+rightMotorSpeed = constrain(map(rightMotorSpeed, 2047, 6142, 0, 255), 0, 255);
 
-// 6. Write to motor driver
+// 5. Write to motor driver
 analogWrite(leftMotorPin1,  leftMotorSpeed);
 digitalWrite(leftMotorPin2, LOW);
 analogWrite(rightMotorPin1, rightMotorSpeed);
@@ -319,9 +318,9 @@ digitalWrite(rightMotorPin2, LOW);
 
 | Variable | File | Default | What It Does |
 |----------|------|---------|--------------|
-| `EMGcap` | Receiver | `2000` | **Activation threshold.** Only ADC values above this drive the motors. Raise it if the robot creeps at rest; lower it if it never responds. |
-| `alpha` | Receiver | `0.75` | **Smoothing factor** (0–1). Higher = faster, more jitter. Lower = smoother, more lag. |
-| `delay(250)` | Transmitter | `250` ms | **Packet rate** (~4 Hz). Reduce to `50` ms for snappier response. |
+| `maxSteeringValue` | Receiver | `100` | **Steering threshold.** Values for the max force for steering. Raise it if the robot turns too easiliy; lower it if its hard to steer. |
+| `alpha` | Transmitter | `0.5` | **Smoothing factor** (0–1). Higher = faster, more jitter. Lower = smoother, more lag. |
+| `delay(250)` | Transmitter | `250` ms | **Packet rate** (~4 Hz). Reduce to `50` ms for snappier response. NOTE: lower delay will cause the ESP32 to warm up. |
 
 ---
 
