@@ -83,7 +83,7 @@ Motors connect to OUT1/OUT2 (left) and OUT3/OUT4 (right). All grounds (batteries
 Two Arduino sketches, built with the Espressif ESP32 board package:
 
 - **`EMGCarTransmitter.ino`** reads both ADC channels, applies exponential smoothing to the EMG, and sends a packet every 250 ms.
-- **`EMGCarReceiver.ino`** decodes packets, mixes speed and steering into left/right PWM (tank drive), and stops the motors if no packet arrives for 5 seconds.
+- **`EMGCarReceiver.ino`** decodes packets, calcaulates speed and steering into left/right PWM (tank drive), and stops the motors if no packet arrives for 5 seconds.
 
 Code is marked into two zones:
 - `// %%%%%` — communication framework (leave as is)
@@ -119,16 +119,6 @@ struct ControlPacket {
 | XIAO ESP32-C6 | `XIAO_ESP32C6` | No A3 |
 
 No code changes are needed between boards for A0–A2. The receiver uses A3, so plan alternate pin assignments if it runs on a C3 or C6.
-
----
-
-## Extension Ideas
-
-- Replace the dynamometer with a second EMG channel for independent left/right control
-- Add reverse using a third signal and the direction pins
-- Use the two spare LM324 sections for extra channels
-- Swap Rf for a potentiometer to make gain adjustable
-- Drive the onboard LED from motor output as visual feedback
 
 ---
 
